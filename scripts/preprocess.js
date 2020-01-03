@@ -1,22 +1,11 @@
 var fs = require("fs");
 var d3 = require("d3");
 
+// TODO: 
+// Add more error handling
+// Refactor to call datasf API instead of using CSVs
+
 let dataArr = [];
-
-// fs.writeFile("data.json", JSON.stringify(filteredDataArr), function(err) {
-//   console.log("file written");
-// });
-
-// function readParklets(filename, enc) {
-//   return new Promise(function(resolve, reject) {
-//       fs.readFile(filename, enc, function(err, data){
-//           if (err) 
-//               reject(err); 
-//           else
-//               resolve(data);
-//       });
-//   });
-// };
 
 var readParkletFile = new Promise(
   function (resolve, reject) {
@@ -67,9 +56,10 @@ var readPoposFile = new Promise(
 var processFiles = function () {
   Promise.all([readParkletFile, readParksFile, readPoposFile]).then(function(values) {
     dataArr = values[0].concat(values[1]).concat(values[2])
-    console.log(dataArr[53])
-    fs.writeFile("data.json", JSON.stringify(dataArr), function(err) {
-      console.log("file written");
+    fs.writeFile("../src/data/locations.json", JSON.stringify(dataArr), function(err) {
+      if(err === null) {
+        console.log("File written successfully");
+      }
     });
   });
 };
