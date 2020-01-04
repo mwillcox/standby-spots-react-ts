@@ -3,6 +3,7 @@ var d3 = require("d3");
 
 // TODO: 
 // Add more error handling
+// At d3 type casting
 // Refactor to call datasf API instead of using CSVs
 
 let dataArr = [];
@@ -12,9 +13,15 @@ var readParkletFile = new Promise(
     fs.readFile("../data/parklet.csv", "utf8", function(error, data) {
       let parsedData = d3.csvParse(data, function(d) {
         return {
-          name: d.Applicant,
-          address: d.Permit_Address,
-          lngLat: [parseFloat(d.Longitude), parseFloat(d.Latitude)]
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(d.Longitude), parseFloat(d.Latitude)]
+          },
+          properties: {
+            name: d.Applicant,
+            address: d.Permit_Address,
+          }
         };
       });
       resolve(parsedData);
@@ -27,9 +34,15 @@ var readParksFile = new Promise(
     fs.readFile("../data/parks.csv", "utf8", function(error, data) {
       let parsedData = d3.csvParse(data, function(d) {
         return {
-          name: d.Map_Label,
-          address: d.Address,
-          lngLat: [parseFloat(d.Longitude), parseFloat(d.Latitude)]
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(d.Longitude), parseFloat(d.Latitude)]
+          },
+          properties: {
+            name: d.Map_Label,
+            address: d.Address
+          }
         }
       });
       resolve(parsedData);
@@ -43,9 +56,15 @@ var readPoposFile = new Promise(
       let parsedData = d3.csvParse(data, function(d) {
         let rawLngLat = d.the_geom.replace(/[POINT()]/g, '').split(" ");
         return {
-          name: d.NAME,
-          address: d.POPOS_ADDRESS,
-          lngLat: [parseFloat(rawLngLat[1]), parseFloat(rawLngLat[2])]
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(rawLngLat[1]), parseFloat(rawLngLat[2])]
+          },
+          properties: {
+            name: d.NAME,
+            address: d.POPOS_ADDRESS
+          }
         }
       })
       resolve(parsedData);
