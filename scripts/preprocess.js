@@ -6,7 +6,10 @@ var d3 = require("d3");
 // At d3 type casting
 // Refactor to call datasf API instead of using CSVs
 
-let dataArr = [];
+let geojsonData = {
+  "type": "FeatureCollection",
+  "features": []
+}
 
 var readParkletFile = new Promise(
   function (resolve, reject) {
@@ -19,8 +22,9 @@ var readParkletFile = new Promise(
             coordinates: [parseFloat(d.Longitude), parseFloat(d.Latitude)]
           },
           properties: {
-            name: d.Applicant,
-            address: d.Permit_Address,
+            name: d.envista_project_name_full,
+            type: 'Parklet',
+            address: titleCase(d.Permit_Address),
           }
         };
       });
@@ -41,7 +45,9 @@ var readParksFile = new Promise(
           },
           properties: {
             name: d.Map_Label,
-            address: d.Address
+            type: 'Park',
+            address: d.Address,
+            description: `Park subtype: ${d.PropertyType}`
           }
         }
       });
@@ -63,7 +69,9 @@ var readPoposFile = new Promise(
           },
           properties: {
             name: d.NAME,
-            address: d.POPOS_ADDRESS
+            type: 'Privately Owned Public Open Space',
+            address: d.POPOS_ADDRESS,
+            description: d.Description
           }
         }
       })
@@ -74,13 +82,25 @@ var readPoposFile = new Promise(
 
 var processFiles = function () {
   Promise.all([readParkletFile, readParksFile, readPoposFile]).then(function(values) {
-    dataArr = values[0].concat(values[1]).concat(values[2])
-    fs.writeFile("../src/data/locations.json", JSON.stringify(dataArr), function(err) {
+    geojsonData.features = values[0].concat(values[1]).concat(values[2])
+    fs.writeFile("../src/data/locations.geojson", JSON.stringify(geojsonData), function(err) {
       if(err === null) {
         console.log("File written successfully");
       }
     });
   });
 };
+
+function titleCase(str) {
+  var splitStr = str.toLowerCase().split(' ');
+  for (var i = 0; i < splitStr.length; i++) {
+      // You do not need to check if i is larger than splitStr length, as your for does that for you
+      // Assign it back to the array
+      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+  }
+  // Directly return the joined string
+  return splitStr.join(' '); 
+}
+
 
 processFiles();
